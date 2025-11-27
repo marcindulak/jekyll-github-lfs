@@ -1,0 +1,10 @@
+title: "Jekyll GitHub LFS Test"
+description: "Minimal test site"
+url: "http://localhost:4000"
+baseurl: ""
+
+markdown: kramdown
+
+exclude:
+  - .gitignore
+  - .gitattributes

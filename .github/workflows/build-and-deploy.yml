@@ -1,0 +1,55 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write # Needed by actions/deploy-pages
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: actions/checkout
+      uses: actions/checkout@v6
+      with:
+        lfs: false
+
+    - name: sudo apt-get install -y tree
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tree
+
+    - name: tree
+      run: |
+        tree -Lps 3
+
+    - name: jekyll build
+      run: |
+        # Avoid: Error: Permission denied @ dir_s_mkdir - /srv/jekyll/_site
+        pwd
+        ls -al
+        id
+        docker run --rm jekyll/jekyll:3 id
+        docker rm -f jekyll || true
+        docker run --name jekyll -v .:/srv/jekyll jekyll/jekyll:3 jekyll build --destination /tmp/_site
+        rm -rf _site
+        docker cp jekyll:/tmp/_site _site
+        ls -al _site
+
+    - name: tree _site
+      run: |
+        tree -Lps 3 _site
+
+    - name: actions/upload-pages-artifact
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: _site/
+
+    - name: actions/deploy-pages
+      id: deployment
+      uses: actions/deploy-pages@v4
